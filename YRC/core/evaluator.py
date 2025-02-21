@@ -2,22 +2,26 @@ import logging
 import numpy as np
 import os
 from PIL import Image
+import time
 
 
 class Evaluator:
     LOGGED_ACTION = 1
 
-    def __init__(self, config):
+    def __init__(self, config, env_name=""):
         self.args = config
+        self.env_name = env_name
+        self.iter = 0
+        self.run_id= int(time.time())
 
     def eval(self, policy, envs, eval_splits, num_episodes=None):
         args = self.args
         policy.eval()
 
         # Create directories for saving observations and images
-        output_dir = "/nas/ucb/bplaut/yield_request_control/data"
-        obs_dir = os.path.join(output_dir, 'observations')
-        img_dir = os.path.join(output_dir, 'images')
+        output_dir = f"/nas/ucb/bplaut/yield_request_control/data"
+        obs_dir = os.path.join(output_dir, self.env_name, 'observations')
+        img_dir = os.path.join(output_dir, self.env_name, 'images')
         os.makedirs(obs_dir, exist_ok=True)
         os.makedirs(img_dir, exist_ok=True)
         
@@ -72,22 +76,23 @@ class Evaluator:
         step_counts = [0 for _ in range(env.num_envs)]
 
         while not has_done.all():
-            # Store observations and save images
-            for env_idx in range(env.num_envs):
-                if not has_done[env_idx]:
-                    # Get observation for this environment
-                    obs_array = obs['env_obs'][env_idx]
-                    all_obs[env_idx].append(obs_array.copy())
+            # Store observations and save images, if it's a test run. The hacky way I'm doing that is if env_name is nonempty
+            if self.env_name != "":
+                for env_idx in range(env.num_envs):
+                    if not has_done[env_idx]:
+                        # Get observation for this environment
+                        obs_array = obs['env_obs'][env_idx] if isinstance(obs, dict) else obs[env_idx]
+                        all_obs[env_idx].append(obs_array.copy())
 
-                    # Transpose from (C, H, W) to (H, W, C)
-                    obs_array = np.transpose(obs_array, (1, 2, 0))
+                        # Transpose from (C, H, W) to (H, W, C)
+                        obs_array = np.transpose(obs_array, (1, 2, 0))
 
-                    # Convert to uint8 for PIL
-                    obs_array = (obs_array * 255).astype(np.uint8)
+                        # Convert to uint8 for PIL
+                        obs_array = (obs_array * 255).astype(np.uint8)
 
-                    img = Image.fromarray(obs_array)
-                    img.save(os.path.join(img_dir, f'env{env_idx}_step{step_counts[env_idx]}.png'))
-                    step_counts[env_idx] += 1
+                        img = Image.fromarray(obs_array)
+                        img.save(os.path.join(img_dir, f'iter{self.iter}_env{env_idx}_step{step_counts[env_idx]}_run-id{self.run_id}.png'))
+                        step_counts[env_idx] += 1
 
             action = policy.act(obs, greedy=args.act_greedy)
 
@@ -112,10 +117,11 @@ class Evaluator:
             has_done |= done
             step += 1
 
-        for env_idx in range(env.num_envs):
-            np.save(os.path.join(obs_dir, f'env{env_idx}_observations.npy'), 
-                   np.array(all_obs[env_idx]))
+        if self.env_name != "":
+            for env_idx in range(env.num_envs):
+                np.save(os.path.join(obs_dir, f'iter{self.iter}_env{env_idx}_run-id{self.run_id}.npy'), np.array(all_obs[env_idx]))
 
+        self.iter += 1
         return log
 
     def summarize(self, log):
