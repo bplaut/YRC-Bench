@@ -105,7 +105,7 @@ def generate_latex(tex_filepath, max_steps, num_envs, output_dir):
 \newcommand\bbr{\mathbb{R}}
 \newcommand{\todo}[1]{{\color{red} todo: #1}}
 \begin{document}
-\newcommand\fps{13}
+\newcommand\fps{15}
 """
     
     # Add frames for each environment
