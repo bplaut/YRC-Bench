@@ -108,4 +108,4 @@ class ThresholdPolicy(Policy):
         logging.info(f"Saved model to {save_path}")
 
     def load_model(self, load_path):
-        self.params = torch.load(load_path)
+        self.params = torch.load(load_path, weights_only=False)
