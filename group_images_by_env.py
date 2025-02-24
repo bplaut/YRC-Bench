@@ -134,7 +134,7 @@ def generate_latex(tex_filepath, max_steps, num_envs, output_dir):
 
 def main():
     if len(sys.argv) != 5:
-        print("Usage: python collect_images.py input_dir output_dir num_envs tex_filepath")
+        print("Usage: python group_images_by_env.py input_dir output_dir num_envs tex_filepath")
         sys.exit(1)
         
     input_dir = sys.argv[1]
