@@ -96,7 +96,7 @@ class Evaluator:
 
             action = policy.act(obs, greedy=args.act_greedy)
 
-            obs, reward, done, info = env.step(action)
+            obs, reward, done, info, base_action = env.step(action)
 
             """
             if action.ndim == 0:
