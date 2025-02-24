@@ -19,11 +19,12 @@ class Evaluator:
         policy.eval()
 
         # Create directories for saving observations and images
-        output_dir = f"/nas/ucb/bplaut/yield_request_control/data"
-        obs_dir = os.path.join(output_dir, self.env_name, 'observations')
-        img_dir = os.path.join(output_dir, self.env_name, 'images')
-        os.makedirs(obs_dir, exist_ok=True)
-        os.makedirs(img_dir, exist_ok=True)
+        if self.env_name != "":
+            output_dir = f"/nas/ucb/bplaut/yield_request_control/data"
+            obs_dir = os.path.join(output_dir, self.env_name, 'observations')
+            img_dir = os.path.join(output_dir, self.env_name, 'images')
+            os.makedirs(obs_dir, exist_ok=True)
+            os.makedirs(img_dir, exist_ok=True)
         
         summary = {}
         for split in eval_splits:
