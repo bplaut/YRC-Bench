@@ -37,6 +37,8 @@ def rename_and_copy_files(input_dir, output_dir):
             shutil.copy2(files['txt'], txt_new_name)
             
             idx += 1
+            if idx % 10000 == 0:
+                print(f"Processed {idx} files")
         else:
             print(f"Warning: Unpaired file found for base name: {base_name}")
 
