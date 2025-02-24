@@ -58,7 +58,6 @@ class Evaluator:
                 log[k].extend(v)
             else:
                 log[k] += v
-
     def _eval_one_iteration(self, policy, env, obs_dir, img_dir):
         args = self.args
         log = {
@@ -91,21 +90,25 @@ class Evaluator:
                         obs_array = (obs_array * 255).astype(np.uint8)
 
                         img = Image.fromarray(obs_array)
-                        img.save(os.path.join(img_dir, f'iter{self.iter}_env{env_idx}_step{step_counts[env_idx]}_run-id{self.run_id}.png'))
+                        img_path = os.path.join(img_dir, f'iter{self.iter}_env{env_idx}_step{step_counts[env_idx]}_run-id{self.run_id}.png')
+                        img.save(img_path)
                         step_counts[env_idx] += 1
 
             action = policy.act(obs, greedy=args.act_greedy)
 
             obs, reward, done, info, base_action = env.step(action)
 
-            """
-            if action.ndim == 0:
-                action = action.reshape(1)
-                reward = reward.reshape(1)
-            """
+            # Save base_action to txt file with matching name
+            if self.env_name != "":
+                for env_idx in range(env.num_envs):
+                    if not has_done[env_idx]:
+                        # Construct txt file path to match the corresponding image file
+                        action_path = os.path.join(img_dir, f'iter{self.iter}_env{env_idx}_step{step_counts[env_idx]-1}_run-id{self.run_id}.txt')
+                        # Save the base_action value
+                        with open(action_path, 'w') as f:
+                            f.write(str(base_action[env_idx]))
 
             for i in range(env.num_envs):
-
                 if "env_reward" in info[i]:
                     log["env_reward"][i] += info[i]["env_reward"] * (1 - has_done[i])
 
