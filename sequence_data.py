@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-def rename_and_copy_files(input_dir, output_dir):
+def rename_and_copy_files(input_dir, output_dir, max_files):
     """
     Copy and rename files from input_dir to output_dir using sequential indices.
     Preserves relationships between .png and .txt files that share the same base name.
@@ -41,15 +41,19 @@ def rename_and_copy_files(input_dir, output_dir):
                 print(f"Processed {idx} files")
         else:
             print(f"Warning: Unpaired file found for base name: {base_name}")
+        if idx >= max_files:
+            break
+
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Rename and copy files with sequential indices')
     parser.add_argument('input_dir', help='Input directory containing the original files')
     parser.add_argument('output_dir', help='Output directory for the renamed files')
+    parser.add_argument('max_files', type=int, help='Maximum number of files to process')
     args = parser.parse_args()
     
-    rename_and_copy_files(args.input_dir, args.output_dir)
+    rename_and_copy_files(args.input_dir, args.output_dir, args.max_files)
     print("Files have been copied and renamed successfully!")
 
 if __name__ == "__main__":
