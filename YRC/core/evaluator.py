@@ -25,6 +25,8 @@ class Evaluator:
             img_dir = os.path.join(output_dir, self.env_name, 'images')
             os.makedirs(obs_dir, exist_ok=True)
             os.makedirs(img_dir, exist_ok=True)
+        else:
+            obs_dir, img_dir = None, None
         
         summary = {}
         for split in eval_splits:
