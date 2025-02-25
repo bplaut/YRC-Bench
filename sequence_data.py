@@ -1,31 +1,44 @@
 import os
 import shutil
+import re
 from pathlib import Path
 
 def rename_and_copy_files(input_dir, output_dir, max_files):
     """
     Copy and rename files from input_dir to output_dir using sequential indices.
     Preserves relationships between .png and .txt files that share the same base name.
+    Sorts files by run-id, iter, env, and step.
     """
     os.makedirs(output_dir, exist_ok=True)
     input_files = list(Path(input_dir).glob('*'))
     file_pairs = {}
     
-    # Group files by their base names (everything before the extension)
+    # Group files by the parsed values from the filename
     for file_path in input_files:
         if file_path.suffix.lower() in ['.png', '.txt']:
             base_name = file_path.stem
-            if base_name not in file_pairs:
-                file_pairs[base_name] = {'png': None, 'txt': None}
             
-            if file_path.suffix.lower() == '.png':
-                file_pairs[base_name]['png'] = file_path
+            # Extract iter, env, step, and run-id using regex
+            match = re.match(r'iter(\d+)_env(\d+)_step(\d+)_run-id(\d+)', base_name)
+            if match:
+                iter_num, env_num, step_num, run_id = map(int, match.groups())
+                
+                # Use a tuple as a key for sorting: (run_id, iter, env, step)
+                sort_key = (run_id, iter_num, env_num, step_num)
+                
+                if sort_key not in file_pairs:
+                    file_pairs[sort_key] = {'png': None, 'txt': None}
+                
+                if file_path.suffix.lower() == '.png':
+                    file_pairs[sort_key]['png'] = file_path
+                else:
+                    file_pairs[sort_key]['txt'] = file_path
             else:
-                file_pairs[base_name]['txt'] = file_path
+                print(f"Warning: File doesn't match expected pattern: {file_path}")
     
     # Copy and rename files, preserving pairs
     idx = 0
-    for base_name, files in sorted(file_pairs.items()):
+    for sort_key, files in sorted(file_pairs.items()):
         # Only process if we have both png and txt files
         if files['png'] and files['txt']:
             # Copy PNG file
@@ -40,7 +53,9 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
             if idx % 10000 == 0:
                 print(f"Processed {idx} files")
         else:
-            print(f"Warning: Unpaired file found for base name: {base_name}")
+            run_id, iter_num, env_num, step_num = sort_key
+            print(f"Warning: Unpaired file found for: iter{iter_num}_env{env_num}_step{step_num}_run-id{run_id}")
+        
         if idx >= max_files:
             break
 
