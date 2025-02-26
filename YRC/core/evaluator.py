@@ -18,15 +18,13 @@ class Evaluator:
         args = self.args
         policy.eval()
 
-        # Create directories for saving observations and images
+        # Create directories for saving obvservations
         if self.env_name != "":
             output_dir = f"/nas/ucb/bplaut/yield_request_control/data"
-            obs_dir = os.path.join(output_dir, self.env_name, 'observations')
-            img_dir = os.path.join(output_dir, self.env_name, 'images')
-            os.makedirs(obs_dir, exist_ok=True)
+            img_dir = os.path.join(output_dir, self.env_name)
             os.makedirs(img_dir, exist_ok=True)
         else:
-            obs_dir, img_dir = None, None
+            img_dir = None
         
         summary = {}
         for split in eval_splits:
@@ -43,7 +41,7 @@ class Evaluator:
             num_iterations = num_episodes // envs[split].num_envs
             log = {}
             for _ in range(num_iterations):
-                this_log = self._eval_one_iteration(policy, envs[split], obs_dir, img_dir)
+                this_log = self._eval_one_iteration(policy, envs[split], img_dir)
                 self._update_log(log, this_log)
 
             summary[split] = self.summarize(log)
@@ -61,7 +59,7 @@ class Evaluator:
                 log[k].extend(v)
             else:
                 log[k] += v
-    def _eval_one_iteration(self, policy, env, obs_dir, img_dir):
+    def _eval_one_iteration(self, policy, env, img_dir):
         args = self.args
         log = {
             "reward": [0] * env.num_envs,
@@ -78,13 +76,12 @@ class Evaluator:
         step_counts = [0 for _ in range(env.num_envs)]
 
         while not has_done.all():
-            # Store observations and save images, if it's a test run. The hacky way I'm doing that is if env_name is nonempty
+            # Save images, if it's a test run. The hacky way I'm doing that is if env_name is nonempty
             if self.env_name != "":
                 for env_idx in range(env.num_envs):
                     if not has_done[env_idx]:
                         # Get observation for this environment
                         obs_array = obs['env_obs'][env_idx] if isinstance(obs, dict) else obs[env_idx]
-                        all_obs[env_idx].append(obs_array.copy())
 
                         # Transpose from (C, H, W) to (H, W, C)
                         obs_array = np.transpose(obs_array, (1, 2, 0))
@@ -110,10 +107,6 @@ class Evaluator:
 
             has_done |= done
             step += 1
-
-        if self.env_name != "":
-            for env_idx in range(env.num_envs):
-                np.save(os.path.join(obs_dir, f'iter{self.iter}_env{env_idx}_run-id{self.run_id}.npy'), np.array(all_obs[env_idx]))
 
         self.iter += 1
         return log
