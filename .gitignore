@@ -1,4 +1,3 @@
-*.json
 experiments/*
 YRC/checkpoints/*
 *swp
