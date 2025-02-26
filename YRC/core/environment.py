@@ -212,7 +212,7 @@ class CoordEnv(gym.Env):
         self._reset_agents(done)
         self.prev_action = action
 
-        return self.get_obs(), reward, done, info, env_action
+        return self.get_obs(), reward, done, info
 
     def _compute_env_action(self, action):
         # NOTE: this method only works with non-recurrent agent models

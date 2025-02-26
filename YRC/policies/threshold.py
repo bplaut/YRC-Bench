@@ -67,7 +67,7 @@ class ThresholdPolicy(Policy):
                         scores.append(score[i].item())
 
             action = sample_action(logit)
-            obs, reward, done, info , base_action= env.step(action)
+            obs, reward, done, info = env.step(action)
             has_done |= done
 
         return scores
