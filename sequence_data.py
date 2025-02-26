@@ -12,7 +12,8 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
     os.makedirs(output_dir, exist_ok=True)
     input_files = list(Path(input_dir).glob('*'))
     file_pairs = {}
-    
+
+    missing_txt = 0
     # Group files by the parsed values from the filename
     for file_path in input_files:
         if file_path.suffix.lower() in ['.png', '.txt']:
@@ -34,7 +35,8 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
                 else:
                     file_pairs[sort_key]['txt'] = file_path
             else:
-                print(f"Warning: File doesn't match expected pattern: {file_path}")
+                missing_txt += 1
+    print(f"Found {missing_txt} files without a matching .txt file")
     
     # Copy and rename files, preserving pairs
     idx = 0
