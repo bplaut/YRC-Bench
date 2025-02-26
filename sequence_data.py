@@ -39,6 +39,7 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
     print(f"Found {missing_txt} files without a matching .txt file")
     
     # Copy and rename files, preserving pairs
+    missing_txt_part2 = 0
     idx = 0
     for sort_key, files in sorted(file_pairs.items()):
         # Only process if we have both png and txt files
@@ -56,10 +57,11 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
                 print(f"Processed {idx} files")
         else:
             run_id, iter_num, env_num, step_num = sort_key
-            print(f"Warning: Unpaired file found for: iter{iter_num}_env{env_num}_step{step_num}_run-id{run_id}")
+            missing_txt_part2 += 1
         
         if idx >= max_files:
             break
+    print(f"Found {missing_txt_part2} files without a matching .png file in the second phase")
 
 
 def main():
