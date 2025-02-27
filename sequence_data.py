@@ -61,7 +61,7 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
         
         if idx >= max_files:
             break
-    print(f"Found {missing_txt_part2} files without a matching .png file in the second phase")
+    print(f"Found {missing_txt_part2} files without a matching .txt file in the second phase")
 
 
 def main():
