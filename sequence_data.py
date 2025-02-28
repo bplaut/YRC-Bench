@@ -13,7 +13,6 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
     input_files = list(Path(input_dir).glob('*'))
     file_pairs = {}
 
-    missing_txt = 0
     # Group files by the parsed values from the filename
     for file_path in input_files:
         if file_path.suffix.lower() in ['.png', '.txt']:
@@ -34,12 +33,9 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
                     file_pairs[sort_key]['png'] = file_path
                 else:
                     file_pairs[sort_key]['txt'] = file_path
-            else:
-                missing_txt += 1
-    print(f"Found {missing_txt} files without a matching .txt file")
     
     # Copy and rename files, preserving pairs
-    missing_txt_part2 = 0
+    missing_txt_count = 0
     idx = 0
     for sort_key, files in sorted(file_pairs.items()):
         # Only process if we have both png and txt files
@@ -57,11 +53,11 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
                 print(f"Processed {idx} files")
         else:
             run_id, iter_num, env_num, step_num = sort_key
-            missing_txt_part2 += 1
+            missing_txt_count += 1
         
         if idx >= max_files:
             break
-    print(f"Found {missing_txt_part2} files without a matching .txt file in the second phase")
+    print(f"Found {missing_txt_count} files without a matching .txt file")
 
 
 def main():
