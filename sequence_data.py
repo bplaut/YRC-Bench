@@ -38,27 +38,20 @@ def rename_and_copy_files(input_dir, output_dir, max_files):
     missing_txt_count = 0
     idx = 0
     for sort_key, files in sorted(file_pairs.items()):
-        # Only process if we have both png and txt files
-        if files['png'] and files['txt']:
-            # Copy PNG file
+        # Copy png if we have it and copy txt if we have it
+        if files['png'] is not None:
             png_new_name = os.path.join(output_dir, f"{idx}.png")
             shutil.copy2(files['png'], png_new_name)
             
-            # Copy corresponding TXT file
+        if files['txt'] is not None:
             txt_new_name = os.path.join(output_dir, f"{idx}.txt")
             shutil.copy2(files['txt'], txt_new_name)
             
-            idx += 1
-            if idx % 10000 == 0:
-                print(f"Processed {idx} files")
-        else:
-            run_id, iter_num, env_num, step_num = sort_key
-            missing_txt_count += 1
-        
+        idx += 1
+        if idx % 10000 == 0:
+            print(f"Processed {idx} files")        
         if idx >= max_files:
             break
-    print(f"Found {missing_txt_count} files without a matching .txt file")
-
 
 def main():
     import argparse
