@@ -3,65 +3,51 @@ import shutil
 import re
 from pathlib import Path
 
-def rename_and_copy_files(input_dir, output_dir, max_files):
+def rename_and_copy_files(input_dir, output_dir, start_idx, end_idx):
     """
-    Copy and rename files from input_dir to output_dir using sequential indices.
-    Preserves relationships between .png and .txt files that share the same base name.
+    Copy and rename PNG files from input_dir to output_dir using sequential indices.
+    Processes files from start_idx (inclusive) to end_idx (exclusive).
     Sorts files by run-id, iter, env, and step.
     """
     os.makedirs(output_dir, exist_ok=True)
-    input_files = list(Path(input_dir).glob('*'))
+    input_files = list(Path(input_dir).glob('*.png'))
     file_pairs = {}
 
-    # Group files by the parsed values from the filename
+    # Group PNG files by the parsed values from the filename
     for file_path in input_files:
-        if file_path.suffix.lower() in ['.png', '.txt']:
-            base_name = file_path.stem
+        base_name = file_path.stem
+        
+        # Extract iter, env, step, and run-id using regex
+        match = re.match(r'iter(\d+)_env(\d+)_step(\d+)_run-id(\d+)', base_name)
+        if match:
+            iter_num, env_num, step_num, run_id = map(int, match.groups())
             
-            # Extract iter, env, step, and run-id using regex
-            match = re.match(r'iter(\d+)_env(\d+)_step(\d+)_run-id(\d+)', base_name)
-            if match:
-                iter_num, env_num, step_num, run_id = map(int, match.groups())
-                
-                # Use a tuple as a key for sorting: (run_id, iter, env, step)
-                sort_key = (run_id, iter_num, env_num, step_num)
-                
-                if sort_key not in file_pairs:
-                    file_pairs[sort_key] = {'png': None, 'txt': None}
-                
-                if file_path.suffix.lower() == '.png':
-                    file_pairs[sort_key]['png'] = file_path
-                else:
-                    file_pairs[sort_key]['txt'] = file_path
+            # Use a tuple as a key for sorting: (run_id, iter, env, step)
+            sort_key = (run_id, iter_num, env_num, step_num)
+            file_pairs[sort_key] = file_path
     
-    # Copy and rename files, preserving pairs
-    missing_txt_count = 0
+    # Copy and rename files
     idx = 0
-    for sort_key, files in sorted(file_pairs.items()):
-        # Copy png if we have it and copy txt if we have it
-        if files['png'] is not None:
-            png_new_name = os.path.join(output_dir, f"{idx}.png")
-            shutil.copy2(files['png'], png_new_name)
+    for sort_key, file_path in sorted(file_pairs.items()):
+        if start_idx <= idx < end_idx:
+            new_name = os.path.join(output_dir, f"{idx}.png")
+            shutil.copy2(file_path, new_name)
             
-        if files['txt'] is not None:
-            txt_new_name = os.path.join(output_dir, f"{idx}.txt")
-            shutil.copy2(files['txt'], txt_new_name)
-            
+            if idx % 10000 == 0:
+                print(f"Processed {idx} files")
+        
         idx += 1
-        if idx % 10000 == 0:
-            print(f"Processed {idx} files")        
-        if idx >= max_files:
-            break
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='Rename and copy files with sequential indices')
+    parser = argparse.ArgumentParser(description='Rename and copy PNG files with sequential indices')
     parser.add_argument('input_dir', help='Input directory containing the original files')
     parser.add_argument('output_dir', help='Output directory for the renamed files')
-    parser.add_argument('max_files', type=int, help='Maximum number of files to process')
+    parser.add_argument('start_idx', type=int, help='Starting index (inclusive)')
+    parser.add_argument('end_idx', type=int, help='Ending index (exclusive)')
     args = parser.parse_args()
     
-    rename_and_copy_files(args.input_dir, args.output_dir, args.max_files)
+    rename_and_copy_files(args.input_dir, args.output_dir, args.start_idx, args.end_idx)
     print("Files have been copied and renamed successfully!")
 
 if __name__ == "__main__":
