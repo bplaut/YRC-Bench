@@ -28,12 +28,14 @@ def rename_and_copy_files(input_dir, output_dir, start_idx, end_idx):
     
     # Copy and rename files
     idx = 0
+    num_processed = 0
     for sort_key, file_path in sorted(file_pairs.items()):
         if start_idx <= idx < end_idx:
             new_name = os.path.join(output_dir, f"{idx}.png")
             shutil.copy2(file_path, new_name)
+            num_processed += 1
             
-            if idx % 10000 == 0:
+            if num_processed % 10000 == 0:
                 print(f"Processed {idx} files")
         
         idx += 1
