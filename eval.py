@@ -15,6 +15,6 @@ if __name__ == "__main__":
     policy = policy_factory.make(config, envs["train"])
     if config.general.algorithm != "always" and not config.coord_policy.baseline:
         policy.load_model(os.path.join(config.experiment_dir, config.file_name))
-    evaluator = Evaluator(config.evaluation, env_name)
+    evaluator = Evaluator(config.evaluation, env_name, args.general.seed)
 
     evaluator.eval(policy, envs, ["test"])

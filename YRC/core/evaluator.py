@@ -8,11 +8,11 @@ import time
 class Evaluator:
     LOGGED_ACTION = 1
 
-    def __init__(self, config, env_name=""):
+    def __init__(self, config, env_name="", seed=None):
         self.args = config
         self.env_name = env_name
         self.iter = 0
-        self.run_id= int(time.time())
+        self.run_id= seed
 
     def eval(self, policy, envs, eval_splits, num_episodes=None):
         args = self.args
