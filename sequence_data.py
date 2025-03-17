@@ -36,7 +36,7 @@ def rename_and_copy_files(input_dir, output_dir, start_idx, end_idx):
             num_processed += 1
             
             if num_processed % 10000 == 0:
-                print(f"Processed {idx} files")
+                print(f"Processed {idx + 1} files")
         
         idx += 1
 
