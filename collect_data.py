@@ -10,6 +10,7 @@ def run_command(args):
         raise ValueError(f"Invalid environment: {env}")
     overall_env = 'coinrun' if 'coinrun' in env else 'maze'
     cmd = f"python eval.py -c configs/procgen_threshold.yaml -n {overall_env}_qc_neg -en {env} -sim YRC/checkpoints/procgen/{overall_env}/sim_weak/model_40009728.pth -weak YRC/checkpoints/procgen/{overall_env}/weak/model_80019456.pth -strong YRC/checkpoints/procgen/{overall_env}/strong/model_200015872.pth -cp_metric margin -f_n best_val_true.ckpt -query_cost 0 -seed {seed} -use_bg {use_bg}"
+    print(f"Running command for seed {seed}")
     result = subprocess.run(cmd, shell=True, capture_output=True)
     if result.returncode != 0:
         print(f"Error running command for seed {seed}: {result.stderr}")
