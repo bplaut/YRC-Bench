@@ -1,6 +1,4 @@
 import jsonargparse
-from wandb.vendor.pygments.lexer import default
-
 
 def make():
     parser = jsonargparse.ArgumentParser()
